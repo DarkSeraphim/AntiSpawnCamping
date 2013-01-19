@@ -1,0 +1,4 @@
+name: AntiRespawn
+main: com.github.DarkSeraphim.AntiRespawn.AntiRespawn
+version: v1.0
+depend: [WorldGuard]
