@@ -10,13 +10,17 @@ import java.util.Iterator;
 import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
@@ -32,11 +36,14 @@ public class AntiRespawn extends JavaPlugin implements Listener
     
     WorldGuardPlugin wgp;
     
+    HashSet<String> spawningQueue;
+    
     @Override
     public void onEnable()
     {
         log = getLogger();
         spawned = new HashSet<String>();
+        spawningQueue = new HashSet<String>();
         Bukkit.getPluginManager().registerEvents(this, this);
         wgp = (WorldGuardPlugin)Bukkit.getPluginManager().getPlugin("WorldGuard");
     }
@@ -51,6 +58,37 @@ public class AntiRespawn extends JavaPlugin implements Listener
     public void onRespawn(PlayerRespawnEvent e)
     {
         spawned.add(e.getPlayer().getName());
+    }
+    
+    @EventHandler
+    public void onCommand(PlayerCommandPreprocessEvent e)
+    {
+        String c = e.getMessage().split(" ")[0];
+        if("/spawn".equalsIgnoreCase(c))
+        {
+            this.spawningQueue.add(e.getPlayer().getName());
+        }
+    }
+    
+    @EventHandler
+    public void onTeleport(PlayerTeleportEvent e)
+    {
+        if(e.getCause() == TeleportCause.ENDER_PEARL || e.getCause() == TeleportCause.NETHER_PORTAL || e.getCause() == TeleportCause.END_PORTAL)
+        {
+            return;
+        }
+        String name = e.getPlayer().getName();
+        if(!this.spawningQueue.contains(name))
+        {
+            return;
+        }
+        Location to = e.getTo();
+        Location spawn = to.getWorld().getSpawnLocation();
+        if(spawn.getBlockX() == to.getBlockX() && spawn.getBlockY() == to.getBlockY() && spawn.getBlockZ() == to.getBlockZ())
+        {
+            this.spawningQueue.remove(name);
+            this.spawned.add(name);
+        }
     }
     
     @EventHandler
