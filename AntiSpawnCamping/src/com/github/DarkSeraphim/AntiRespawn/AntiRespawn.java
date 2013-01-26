@@ -104,7 +104,8 @@ public class AntiRespawn extends JavaPlugin implements Listener
     public void onDenyPvP(DisallowedPVPEvent e)
     {
         Player def = e.getDefender();
-        if(!spawned.contains(def.getName()))
+        Player att = e.getAttacker();
+        if(!spawned.contains(def.getName()) && !spawned.contains(att.getName()))
         {
             e.setCancelled(true);
         }
