@@ -105,9 +105,17 @@ public class AntiRespawn extends JavaPlugin implements Listener
     {
         Player def = e.getDefender();
         Player att = e.getAttacker();
+
+        //Cancel Attacks between players.
         if(!spawned.contains(def.getName()) && !spawned.contains(att.getName()))
         {
             e.setCancelled(true);
+        }
+                                
+        //Enable PvP on Attacker when attacking a person without NoPvP flag.
+        if(!spawned.contains(def.getName()) && spawned.contains(att.getName()))
+        {
+            spawned.remove(att.getPlayer().getName());
         }
     }
     
